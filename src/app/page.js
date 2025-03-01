@@ -6,7 +6,9 @@ import styles from "./page.module.css";
 export default function Home() {
   const [vakitler, setVakitler] = useState([])
   const [weatherData, setWeatherData] = useState([])
-  const [remainingClock,setRemainingClock] = useState([]);
+  const [remainingClock,setRemainingClock] = useState("")
+  const [nowVakit,setNowVakit] = useState("")
+  const [nowClock,setNowClock] = useState("")
   const [hadits,setHadits] = useState([])
   const [selectedHadits,setSelectedHadits] = useState([])
 
@@ -29,68 +31,84 @@ export default function Home() {
     const hadithNumber = (day + month) % haditsResponse.hadiths.length
 
     setSelectedHadits(haditsResponse.hadiths[hadithNumber])
-    console.log(haditsResponse.hadiths[hadithNumber],haditsResponse);
   }
 
+  //kalan vakit hesaplama fonksiyonu
   function calculateTimeDifference(time1, time2) {
     // Şu anki tarih bilgisi
     const currentDate = new Date();
-  
-    // Bugün saat 20:00
+    
+    // Verilen saati günün o saatine dönüştür
     const time1Parts = time1.split(':');
     const date1 = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), time1Parts[0], time1Parts[1]);
-  
-    // Yarın saat 06:00
+    
+    // Diğer saati günün o saatine dönüştür
     const time2Parts = time2.split(':');
-    const date2 = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, time2Parts[0], time2Parts[1]);
-  
+    const date2 = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), time2Parts[0], time2Parts[1]);
+    
+    // Eğer time2, time1'den önceyse, time2'yi bir gün sonrasına al
+    if (date2 < date1) {
+        date2.setDate(date2.getDate() + 1);
+    }
+    
     // Tarihler arasındaki farkı milisaniye cinsinden hesapla
     const diffInMillis = date2 - date1;
-  
+    
     // Milisaniyeyi saat ve dakikaya dönüştür
     const diffInHours = Math.floor(diffInMillis / (1000 * 60 * 60));
     const diffInMinutes = Math.floor((diffInMillis % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${diffInHours} saat ${diffInMinutes} dakika ${new Date().getSeconds()} saniye`;
+  }
+
+  //namaz vakitlerine kalan zamanı ve hangi vakitte olduğumuzu hesapla
+  function calculateRemainingPrayerTime() {
+      const date = new Date()
+      const clock = date.getHours().toString().padStart(2, '0') + ":" + date.getMinutes().toString().padStart(2, '0')
+      const nowVakit = vakitler.find(vakit => vakit.MiladiTarihKisa === new Date().toLocaleDateString("tr-TR"))
+
+      setNowClock(date.getHours() + " saat " + date.getMinutes() + " dakika " + date.getSeconds() +" saniye ")
+
+      if (clock >= nowVakit.Imsak && clock < nowVakit.Gunes) {
+          const difference = calculateTimeDifference(clock, nowVakit.Gunes)
+          setRemainingClock(difference)
+          setNowVakit("Sabah")
+          return
+      }
+      else if (clock >= nowVakit.Gunes && clock < nowVakit.Ogle) {
+          const difference = calculateTimeDifference(clock, nowVakit.Ogle)
+          setRemainingClock(difference)
+          setNowVakit("Güneş")
+      }
+      else if (clock >= nowVakit.Ogle && clock < nowVakit.Ikindi) {
+          const difference = calculateTimeDifference(clock, nowVakit.Ikindi)
+          setRemainingClock(difference)
+          setNowVakit("Öğle")
+      }
+      else if (clock >= nowVakit.Ikindi && clock < nowVakit.Aksam) {
+          const difference = calculateTimeDifference(clock, nowVakit.Aksam)
+          setRemainingClock(difference)
+          setNowVakit("İkindi")
+          return
+      }
+      else if (clock >= nowVakit.Aksam && clock < nowVakit.Yatsi) {
+          const difference = calculateTimeDifference(clock, nowVakit.Yatsi)
+          setRemainingClock(difference)
+          setNowVakit("Akşam")
+          return
+      }
+      else {
+          const tomorrowDate = new Date()
+          tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+          const tomorrowVakit = vakitler.find(vakit => vakit.MiladiTarihKisa === tomorrowDate.toLocaleDateString("tr-TR"))
+          const difference = calculateTimeDifference(clock, tomorrowVakit.Imsak)
+          setRemainingClock(difference)
+          setNowVakit("Yatsı")
+          return
+      }
+  }
+
   
-    return `${diffInHours} saat ${diffInMinutes} dakika`;
-  }
-
-  function calculateRemainingPrayerTime(){
-    const date = new Date()
-    const clock = date.getHours().toString().padStart(2,'0') + "." + date.getMinutes()
-    const nowVakit = vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR"))
-
-    if(clock >= nowVakit.Imsak.replace(":",".") && clock < nowVakit.Gunes.replace(":",".")){
-      const difference = calculateTimeDifference(clock.split('.')[0] + ":" + clock.split('.')[1], nowVakit.Gunes);
-      setRemainingClock([difference,"Sabah"])
-      return;
-    }
-    else if(clock >= nowVakit.Gunes.replace(":",".") && clock < nowVakit.Ogle.replace(":",".")){
-      const difference = calculateTimeDifference(clock.split('.')[0] + ":" + clock.split('.')[1], nowVakit.Ogle);
-      setRemainingClock([difference,"Guneş"])
-      return;
-    }
-    else if(clock >= nowVakit.Ogle.replace(":",".") && clock < nowVakit.Ikindi.replace(":",".")){
-      const difference = calculateTimeDifference(clock.split('.')[0] + ":" + clock.split('.')[1], nowVakit.Ikindi);
-      setRemainingClock([difference,"Ogle"])
-      return
-    }
-    else if(clock >= nowVakit.Ikindi.replace(":",".") && clock < nowVakit.Aksam.replace(":",".")){
-      const difference = calculateTimeDifference(clock.split('.')[0] + ":" + clock.split('.')[1], nowVakit.Aksam);
-      setRemainingClock([difference,"İkindi"])
-      return
-    }
-    else if(clock >= nowVakit.Aksam.replace(":",".") && clock < nowVakit.Yatsi.replace(":",".")){
-      const difference = calculateTimeDifference(clock.split('.')[0] + ":" + clock.split('.')[1], nowVakit.Yatsi);
-      setRemainingClock([difference,"Akşam"])
-      return
-    }
-    else{
-      const difference = calculateTimeDifference(clock.split('.')[0] + ":" + clock.split('.')[1], "05:07");
-      setRemainingClock([difference,"Yatsı"])
-      return
-    }
-  }
-
   useEffect(() => {
     getData()
 
@@ -103,7 +121,7 @@ export default function Home() {
       calculateRemainingPrayerTime()
 
       //her 30 saniyede 1 kalan vakiti hesapla
-      setTimeout(calculateRemainingPrayerTime, 32000);
+      setInterval(calculateRemainingPrayerTime, 1000);
     }
 
   }, [vakitler])
@@ -114,18 +132,23 @@ export default function Home() {
       <div className={styles.toolDiv}>
         {vakitler.length !== 0 ? vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR")).Imsak : "Yükleniyor..."}
       </div>
+
       <div className={styles.toolDiv}>
         {vakitler.length !== 0 ? vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR")).Gunes : "Yükleniyor..."}
       </div>
+
       <div className={styles.toolDiv}>
         {vakitler.length !== 0 ? vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR")).Ogle : "Yükleniyor..."}
       </div>
+
       <div className={styles.toolDiv}>
         {vakitler.length !== 0 ? vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR")).Ikindi : "Yükleniyor..."}
       </div>
+
       <div className={styles.toolDiv}>
         {vakitler.length !== 0 ? vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR")).Aksam : "Yükleniyor..."}
       </div>
+
       <div className={styles.toolDiv}>
         {vakitler.length !== 0 ? vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR")).Yatsi : "Yükleniyor..."}
       </div>
@@ -157,6 +180,7 @@ export default function Home() {
 
       <br></br>
 
+      {/* Miladi ve Hicri Takvim */}
       <div className={styles.toolDiv}>
         <span>{vakitler.length !== 0 ? vakitler.find(vakit => vakit.MiladiTarihKisa == new Date().toLocaleDateString("tr-TR")).MiladiTarihUzun : "Yükleniyor..."}</span>
         <br></br>
@@ -164,20 +188,26 @@ export default function Home() {
       </div>
 
       <br></br>
-      
+
+      {/* Şu Anki ve Sonraki Vakite Kalan Saat */}
       <div className={styles.toolDiv}>
-        <span>{remainingClock[0]}</span>
+        <span>{remainingClock}</span>
         <br></br>
-        <span>{remainingClock[1]}</span>
+        <span>{nowClock}</span>
       </div>
 
+      <br></br>
+
+      {/* Şu anki vakit */}
+      <div className={styles.toolDiv}> <span>{nowVakit}</span> </div>
+
+      {/* Günlük hadis ve detayları */}
+
       <div className={styles.toolDiv}>
-        <span>{
-          selectedHadits.text
-        }</span>
+        <span>{selectedHadits.text}</span>
         <br></br>
         <br></br>
-        <span>Hadis numarası: {selectedHadits.hadithnumber} Kitap: {hadits.metadata.name}</span>
+        <span>Hadis Numarası: {selectedHadits.hadithnumber} Kitap: {hadits.metadata.name}</span>
       </div>
     </>
   );
