@@ -191,23 +191,24 @@ export default function Home() {
 
       {/* Şu Anki ve Sonraki Vakite Kalan Saat */}
       <div className={styles.toolDiv}>
-        <span>{remainingClock}</span>
+        <span>{remainingClock ? remainingClock : "Yükleniyor..."}</span>
         <br></br>
-        <span>{nowClock}</span>
+        <span>{nowClock ? nowClock : "Yükleniyor..."}</span>
       </div>
 
       <br></br>
 
       {/* Şu anki vakit */}
-      <div className={styles.toolDiv}> <span>{nowVakit}</span> </div>
+      <div className={styles.toolDiv}> <span>{nowVakit ? nowVakit : "Yükleniyor..."}</span> </div>
 
       {/* Günlük hadis ve detayları */}
 
       <div className={styles.toolDiv}>
-        <span>{selectedHadits.text}</span>
+        
+      <span>{selectedHadits ? selectedHadits.text :  "Yükleniyor..."}</span>
         <br></br>
         <br></br>
-        <span>Hadis Numarası: {selectedHadits.hadithnumber} Kitap: {hadits.metadata.name}</span>
+        <span>Hadis Numarası: {selectedHadits ? selectedHadits.hadithnumber :  "Yükleniyor..."} Kitap: {hadits.metadata ? hadits.metadata.name : "Yükleniyor..."}</span>
       </div>
     </>
   );
