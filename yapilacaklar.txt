@@ -1,0 +1,5 @@
+ezan vakitleri getirilecek - başarılı
+şu anki saat ve sonraki vakite kalan süre eklenecek(saniye ile) - başarılı(API de saniye olmadığı için sadece saat ve dakika ile tamamlandı)
+Günlük Hadis(Network taktiği ile bul) - başarılı
+günün miladi ve hicri tarihini göster - başarılı
+günün gün doğma saatini ve batma saatini göster - başarılı

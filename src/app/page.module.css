@@ -1,0 +1,10 @@
+.toolDiv{
+    background-color: whitesmoke;
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.722);
+    width: fit-content;
+    padding: 5px;
+    border-radius: 5px;
+    margin: 5px;
+    display: inline-block;
+    font-size: x-large;
+}
