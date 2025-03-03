@@ -79,24 +79,36 @@ export default function KalanVakit(){
     }
 
     useEffect(() => {
-        setVakitler(JSON.parse(localStorage.getItem("ezan-vakitleri")))
+        if(!localStorage.getItem("ezan-vakitleri")){
+            setVakitler({response:"error"})
+        }
+        else{
+            setVakitler(JSON.parse(localStorage.getItem("ezan-vakitleri")))
+        }
     },[])
 
     useEffect(() => {
-        if(vakitler.length !== 0){
+        if(!vakitler.response && vakitler.length !== 0){
             calculateRemainingPrayerTime()
 
             setInterval(calculateRemainingPrayerTime,1000)
         }
     },[vakitler])
 
-    return(
-        <div className={styles.toolDiv}>
-            <span>Sonraki Vakite Kalan Süre: {remainingClock ? remainingClock : "Yükleniyor..."}</span>
-            <br></br>
-            <span>Şimdiki Saat: {nowClock ? nowClock : "Yükleniyor..."}</span>
-            <br></br>
-            <span>Şimdiki Vakit: {nowVakit ? nowVakit : "Yükleniyor..."}</span>
-        </div>
-    )
+    if(vakitler.response){
+        return(
+            <h1>Hata, lütfen tekrar deneyin.</h1>
+        )
+    }
+    else{
+        return(
+            <div className={styles.toolDiv}>
+                <span>Sonraki Vakite Kalan Süre: {remainingClock ? remainingClock : "Yükleniyor..."}</span>
+                <br></br>
+                <span>Şimdiki Saat: {nowClock ? nowClock : "Yükleniyor..."}</span>
+                <br></br>
+                <span>Şimdiki Vakit: {nowVakit ? nowVakit : "Yükleniyor..."}</span>
+            </div>
+        )
+    }
 }
